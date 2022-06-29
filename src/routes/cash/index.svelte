@@ -1,0 +1,171 @@
+<script lang="ts">
+	import axios from 'axios';
+	import type { Cashflow } from '$lib/types';
+	import { onMount } from 'svelte';
+	import DataTable, { Body, Cell, Head, Row } from '@smui/data-table';
+	import LinearProgress from '@smui/linear-progress';
+	import moment from 'moment';
+	import Select, { Option } from '@smui/select';
+	import { derived, writable } from 'svelte/store';
+	import Textfield from '@smui/textfield';
+	import Button from '@smui/button';
+	import { SvelteToast, toast } from '@zerodevx/svelte-toast';
+	import IconButton, { Icon } from '@smui/icon-button';
+	import { numberWithCommas } from '$lib/util';
+
+	let rows: Cashflow[] = [];
+	let loaded = true;
+	let strategies = ['CBOND_FUT', 'CBOND_FUT_HF'];
+	let accounts = ['xlc2-gtja', 'xlc6-ms', 'xla-yhsn'];
+	let strategy = writable(strategies[0]);
+	let account = writable('account');
+	let side = '';
+	let option = derived([strategy, account], ($values) => {
+		return { strategy: $values[0], account: $values[1] };
+	});
+	let cashIO = 0;
+
+	function refresh(o: any) {
+		const base = '/api/cash';
+		const params = new URLSearchParams();
+		if (o.strategy) {
+			params.set('strategy', o.strategy);
+		}
+		if (o.account) {
+			params.set('account', o.account);
+		}
+		// somehow ugly, but works
+		const u = base + '?' + params.toString();
+		axios.get(u).then((res) => {
+			const cashflows = res.data as Cashflow[];
+			rows = cashflows;
+		});
+	}
+
+	onMount(() => {
+		option.subscribe(refresh);
+	});
+
+	function accountNumber(n: number) {
+		n = Math.round(n)
+		if (n > 0) {
+			return numberWithCommas(n);
+		}  else {
+			n = -n
+			return `(${numberWithCommas(n)})`
+		}
+	}
+
+	function submitCashIO() {
+		if ($strategy && $account) {
+			const item: Cashflow = {
+				strategy: $strategy,
+				fundAccount: $account,
+				fundFlow: cashIO,
+				t: new Date(new Date().toDateString())
+			};
+			axios.post('/api/cash', item).then((res) => {
+				toast.push(`提交成功! affect ${res.data.affected}行, id ${res.data.insertedId}`);
+				// refresh again
+				refresh($option);
+			});
+		} else {
+			alert('设置出入金账户和策略');
+		}
+	}
+</script>
+
+<svelte:head>
+	<title>出入金</title>
+</svelte:head>
+<div class="container">
+	<div class="option">
+		<Select bind:value={$strategy} label="策略">
+			{#each strategies as strategy}
+				<Option value={strategy}>{strategy}</Option>
+			{/each}
+		</Select>
+
+		<Select bind:value={$account} label="账户">
+			<Option value={''}>无</Option>
+			{#each accounts as account}
+				<Option value={account}>{account}</Option>
+			{/each}
+		</Select>
+		<Textfield type="number" label="出入金额" bind:value={cashIO} />
+		<Select bind:value={side} label="方向">
+			<Option value={''}>无</Option>
+			<Option value={'in'}>入金</Option>
+			<Option value={'out'}>出金</Option>
+		</Select>
+		<Button on:click={submitCashIO} variant="raised">增加出入金</Button>
+	</div>
+
+	<div class="table">
+		<div class="toolbar">
+			<IconButton on:click={() => refresh($option)} class="material-icons">refresh</IconButton>
+			<div style="display: flex; flex: 1; align-items: center">
+				<Icon class="material-icons" >attach_money</Icon>
+				<span style="margin-right: 15px" >{accountNumber(rows.reduce((a, n) => a + n.fundFlow, 0))}</span>
+				<Icon class="material-icons">add</Icon>
+				<span style="margin-right: 15px">{accountNumber(rows.filter(n => n.fundFlow > 0).reduce((a, n) => a + n.fundFlow, 0))}</span>
+				<Icon class="material-icons">remove</Icon>
+				<span>{accountNumber(rows.filter(n => n.fundFlow < 0).reduce((a, n) => a + n.fundFlow, 0))}</span>
+			</div>
+		</div>
+		<div class="table-container">
+			<DataTable sortable stickyHeader style="width: 100%">
+				<Head>
+					<Row>
+						<Cell>日期</Cell>
+						<Cell>策略</Cell>
+						<Cell>账户</Cell>
+						<Cell style="width: 100%;">金额</Cell>
+					</Row>
+				</Head>
+				<Body>
+					{#each rows as row (row.id)}
+						{#if (side === 'in' && row.fundFlow > 0) || (side === 'out' && row.fundFlow < 0) || side === ''}
+							<Row>
+								<Cell>{moment(row.t).format('YYYY-MM-DD')}</Cell>
+								<Cell>{row.strategy}</Cell>
+								<Cell>{row.fundAccount}</Cell>
+								<Cell>{accountNumber(Math.round(row.fundFlow))}</Cell>
+							</Row>
+						{/if}
+					{/each}
+				</Body>
+				<LinearProgress
+					indeterminate
+					bind:closed={loaded}
+					aria-label="Data is being loaded..."
+					slot="progress"
+				/>
+			</DataTable>
+		</div>
+	</div>
+</div>
+<SvelteToast />
+
+<style>
+	.toolbar {
+		display: flex;
+		align-items: center;
+	}
+
+	.table {
+		width: 50%;
+	}
+
+	.table-container {
+		height: 800px;
+		overflow-y: scroll;
+	}
+
+	.option {
+		display: flex;
+		flex-direction: column;
+		width: 200px;
+		margin: 20px 10px;
+	}
+</style>
