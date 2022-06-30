@@ -12,6 +12,7 @@
 	import { SvelteToast, toast } from '@zerodevx/svelte-toast';
 	import IconButton, { Icon } from '@smui/icon-button';
 	import { numberWithCommas } from '$lib/util';
+	import { slimscroll } from 'svelte-slimscroll';
 
 	let rows: Cashflow[] = [];
 	let loaded = true;
@@ -23,7 +24,7 @@
 	let option = derived([strategy, account], ($values) => {
 		return { strategy: $values[0], account: $values[1] };
 	});
-	let cashIO = 0;
+	let cashAmount = 0;
 
 	function refresh(o: any) {
 		const base = '/api/cash';
@@ -47,12 +48,12 @@
 	});
 
 	function accountNumber(n: number) {
-		n = Math.round(n)
+		n = Math.round(n);
 		if (n > 0) {
 			return numberWithCommas(n);
-		}  else {
-			n = -n
-			return `(${numberWithCommas(n)})`
+		} else {
+			n = -n;
+			return `(${numberWithCommas(n)})`;
 		}
 	}
 
@@ -61,7 +62,7 @@
 			const item: Cashflow = {
 				strategy: $strategy,
 				fundAccount: $account,
-				fundFlow: cashIO,
+				fundFlow: cashAmount,
 				t: new Date(new Date().toDateString())
 			};
 			axios.post('/api/cash', item).then((res) => {
@@ -92,28 +93,38 @@
 				<Option value={account}>{account}</Option>
 			{/each}
 		</Select>
-		<Textfield type="number" label="出入金额" bind:value={cashIO} />
+		<Textfield type="number" label="出入金额" bind:value={cashAmount} />
 		<Select bind:value={side} label="方向">
 			<Option value={''}>无</Option>
 			<Option value={'in'}>入金</Option>
 			<Option value={'out'}>出金</Option>
 		</Select>
-		<Button on:click={submitCashIO} variant="raised">增加出入金</Button>
+		<Button on:click={submitCashIO} variant="raised">{cashAmount > 0 ? '入金' : '出金'}</Button>
 	</div>
 
 	<div class="table">
 		<div class="toolbar">
 			<IconButton on:click={() => refresh($option)} class="material-icons">refresh</IconButton>
 			<div style="display: flex; flex: 1; align-items: center">
-				<Icon class="material-icons" >attach_money</Icon>
-				<span style="margin-right: 15px" >{accountNumber(rows.reduce((a, n) => a + n.fundFlow, 0))}</span>
+				<Icon class="material-icons">attach_money</Icon>
+				<span style="margin-right: 15px"
+					>{accountNumber(rows.reduce((a, n) => a + n.fundFlow, 0))}</span
+				>
 				<Icon class="material-icons">add</Icon>
-				<span style="margin-right: 15px">{accountNumber(rows.filter(n => n.fundFlow > 0).reduce((a, n) => a + n.fundFlow, 0))}</span>
+				<span style="margin-right: 15px"
+					>{accountNumber(
+						rows.filter((n) => n.fundFlow > 0).reduce((a, n) => a + n.fundFlow, 0)
+					)}</span
+				>
 				<Icon class="material-icons">remove</Icon>
-				<span>{accountNumber(rows.filter(n => n.fundFlow < 0).reduce((a, n) => a + n.fundFlow, 0))}</span>
+				<span
+					>{accountNumber(
+						rows.filter((n) => n.fundFlow < 0).reduce((a, n) => a + n.fundFlow, 0)
+					)}</span
+				>
 			</div>
 		</div>
-		<div class="table-container">
+		<div class="table-container" use:slimscroll={{ height: '800px', alwaysVisible: true }}>
 			<DataTable sortable stickyHeader style="width: 100%">
 				<Head>
 					<Row>
@@ -158,7 +169,6 @@
 	}
 
 	.table-container {
-		height: 800px;
 		overflow-y: scroll;
 	}
 
