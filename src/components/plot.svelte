@@ -9,6 +9,9 @@
 	let canvas: HTMLElement;
 
 	const render = async (key: string) => {
+		if (!canvas) {
+			return;
+		}
 		const mychart = init(canvas);
 		try {
 			const { data } = await axios.get('/api/chart/' + key);
@@ -21,12 +24,14 @@
 			const e = error as AxiosError;
 			toast.push('Failed to retrive plot ' + e.code!);
 		}
-	}
+	};
 
 	// trigger update (via function) when key prop value changed
-	$: render(key)
+	$: render(key);
 
-	onMount(async () => {render(key)});
+	onMount(async () => {
+		render(key);
+	});
 </script>
 
 <div id="canvas" bind:this={canvas} style="height:{height};width:{width}" />
