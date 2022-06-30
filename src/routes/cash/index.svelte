@@ -13,6 +13,8 @@
 	import IconButton, { Icon } from '@smui/icon-button';
 	import { numberWithCommas } from '$lib/util';
 	import { slimscroll } from 'svelte-slimscroll';
+	import Card from '@smui/card';
+	import Plot from '../../components/plot.svelte'
 
 	let rows: Cashflow[] = [];
 	let loaded = true;
@@ -25,6 +27,8 @@
 		return { strategy: $values[0], account: $values[1] };
 	});
 	let cashAmount = 0;
+	let plotKey = "y";
+
 
 	function refresh(o: any) {
 		const base = '/api/cash';
@@ -57,12 +61,12 @@
 		}
 	}
 
-	function submitCashIO() {
+	function submitCashIO(cash: number) {
 		if ($strategy && $account) {
 			const item: Cashflow = {
 				strategy: $strategy,
 				fundAccount: $account,
-				fundFlow: cashAmount,
+				fundFlow: cash,
 				t: new Date(new Date().toDateString())
 			};
 			axios.post('/api/cash', item).then((res) => {
@@ -80,27 +84,50 @@
 	<title>出入金</title>
 </svelte:head>
 <div class="container">
-	<div class="option">
-		<Select bind:value={$strategy} label="策略">
-			{#each strategies as strategy}
-				<Option value={strategy}>{strategy}</Option>
-			{/each}
-		</Select>
+	<Card style="display: flex; flex-direction: row">
+		<div class="option">
+			<Select bind:value={plotKey} label="收益分拆">
+				<Option value={"y"}>ETF</Option>
+				<Option value={"z"}>CBOND_FUT</Option>
+			</Select>
+			<Select bind:value={$strategy} label="策略">
+				{#each strategies as strategy}
+					<Option value={strategy}>{strategy}</Option>
+				{/each}
+			</Select>
 
-		<Select bind:value={$account} label="账户">
-			<Option value={''}>无</Option>
-			{#each accounts as account}
-				<Option value={account}>{account}</Option>
-			{/each}
-		</Select>
-		<Textfield type="number" label="出入金额" bind:value={cashAmount} />
-		<Select bind:value={side} label="方向">
-			<Option value={''}>无</Option>
-			<Option value={'in'}>入金</Option>
-			<Option value={'out'}>出金</Option>
-		</Select>
-		<Button on:click={submitCashIO} variant="raised">{cashAmount > 0 ? '入金' : '出金'}</Button>
-	</div>
+			<Select bind:value={$account} label="账户">
+				<Option value={''}>无</Option>
+				{#each accounts as account}
+					<Option value={account}>{account}</Option>
+				{/each}
+			</Select>
+			<Textfield type="number" label="出入金额" bind:value={cashAmount} />
+			<Select bind:value={side} label="方向">
+				<Option value={''}>无</Option>
+				<Option value={'in'}>入金</Option>
+				<Option value={'out'}>出金</Option>
+			</Select>
+
+			<div style="display: flex; flex-direction: row">
+				<Button
+					style="flex: 1; margin: 3px"
+					on:click={() => {
+						submitCashIO(Math.abs(cashAmount));
+					}}
+					variant="raised">入金</Button
+				>
+				<Button
+					style="flex: 1; margin: 3px"
+					on:click={() => {
+						submitCashIO(-Math.abs(cashAmount));
+					}}
+					variant="raised">出金</Button
+				>
+			</div>
+		</div>
+		<Plot key={plotKey} width="100%" height="400px"></Plot>
+	</Card>
 
 	<div class="table">
 		<div class="toolbar">
@@ -124,7 +151,7 @@
 				>
 			</div>
 		</div>
-		<div class="table-container" use:slimscroll={{ height: '800px', alwaysVisible: true }}>
+		<div class="table-container" use:slimscroll={{ height: '600px', alwaysVisible: true }}>
 			<DataTable sortable stickyHeader style="width: 100%">
 				<Head>
 					<Row>
@@ -164,8 +191,8 @@
 		align-items: center;
 	}
 
-	.table {
-		width: 50%;
+	.container {
+		margin: 0 50px
 	}
 
 	.table-container {
