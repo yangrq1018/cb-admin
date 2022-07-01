@@ -10,7 +10,6 @@ await client.connect();
 
 export async function get(e: RequestEvent) {
     const key = e.params.id;
-    console.log(key)
     const chartOptions = await client.get(key + "_with_quotes");
     if (!chartOptions) {
         return {

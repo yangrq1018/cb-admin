@@ -15,7 +15,7 @@
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.22.2",
-		"@sveltejs/adapter-auto": "next",
+		"@sveltejs/adapter-node": "^1.0.0-next.78",
 		"@sveltejs/kit": "next",
 		"@typescript-eslint/eslint-plugin": "^5.27.0",
 		"@typescript-eslint/parser": "^5.27.0",
@@ -34,12 +34,13 @@
 	"dependencies": {
 		"@smui/button": "^6.0.0-beta.16",
 		"@smui/card": "^6.0.0-beta.16",
+		"@smui/checkbox": "^6.0.0-beta.16",
 		"@smui/data-table": "^6.0.0-beta.16",
+		"@smui/form-field": "^6.0.0-beta.16",
 		"@smui/icon-button": "^6.0.0-beta.16",
 		"@smui/linear-progress": "^6.0.0-beta.16",
 		"@smui/select": "^6.0.0-beta.16",
 		"@smui/textfield": "^6.0.0-beta.16",
-		"@sveltejs/adapter-node": "^1.0.0-next.78",
 		"@zerodevx/svelte-toast": "^0.7.2",
 		"axios": "^0.27.2",
 		"echarts": "^5.3.3",

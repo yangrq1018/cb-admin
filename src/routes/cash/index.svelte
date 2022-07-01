@@ -14,7 +14,9 @@
 	import { numberWithCommas } from '$lib/util';
 	import { slimscroll } from 'svelte-slimscroll';
 	import Card from '@smui/card';
-	import Plot from '../../components/plot.svelte'
+	import Plot from '../../components/plot.svelte';
+	import Checkbox from '@smui/checkbox';
+	import FormField from '@smui/form-field';
 
 	let rows: Cashflow[] = [];
 	let loaded = true;
@@ -27,8 +29,8 @@
 		return { strategy: $values[0], account: $values[1] };
 	});
 	let cashAmount = 0;
-	let plotKey = "y";
-
+	let plotKey = 'z';
+	let isAdmin = false;
 
 	function refresh(o: any) {
 		const base = '/api/cash';
@@ -87,8 +89,8 @@
 	<Card style="display: flex; flex-direction: row">
 		<div class="option">
 			<Select bind:value={plotKey} label="收益分拆">
-				<Option value={"y"}>ETF</Option>
-				<Option value={"z"}>CBOND_FUT</Option>
+				<Option value={'y'}>ETF</Option>
+				<Option value={'z'}>策略</Option>
 			</Select>
 			<Select bind:value={$strategy} label="策略">
 				{#each strategies as strategy}
@@ -103,14 +105,21 @@
 				{/each}
 			</Select>
 			<Textfield type="number" label="出入金额" bind:value={cashAmount} />
+
 			<Select bind:value={side} label="方向">
 				<Option value={''}>无</Option>
 				<Option value={'in'}>入金</Option>
 				<Option value={'out'}>出金</Option>
 			</Select>
 
+			<FormField>
+				<Checkbox bind:checked={isAdmin} />
+				<span slot="label">是否有操作权限</span>
+			</FormField>
+
 			<div style="display: flex; flex-direction: row">
 				<Button
+					disabled={!isAdmin}
 					style="flex: 1; margin: 3px"
 					on:click={() => {
 						submitCashIO(Math.abs(cashAmount));
@@ -118,6 +127,7 @@
 					variant="raised">入金</Button
 				>
 				<Button
+					disabled={!isAdmin}
 					style="flex: 1; margin: 3px"
 					on:click={() => {
 						submitCashIO(-Math.abs(cashAmount));
@@ -126,7 +136,7 @@
 				>
 			</div>
 		</div>
-		<Plot key={plotKey} width="100%" height="400px"></Plot>
+		<Plot key={plotKey} width="100%" height="400px" />
 	</Card>
 
 	<div class="table">
@@ -192,7 +202,7 @@
 	}
 
 	.container {
-		margin: 0 50px
+		margin: 0 50px;
 	}
 
 	.table-container {
