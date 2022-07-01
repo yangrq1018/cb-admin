@@ -21,7 +21,7 @@
 	let rows: Cashflow[] = [];
 	let loaded = true;
 	let strategies = ['CBOND_FUT', 'CBOND_FUT_HF'];
-	let accounts = ['xlc2-gtja', 'xlc6-ms', 'xla-yhsn'];
+	let accounts: string[] = [];
 	let strategy = writable(strategies[0]);
 	let account = writable('account');
 	let side = '';
@@ -49,8 +49,14 @@
 		});
 	}
 
+	async function fetchAccounts() {
+		const { data } = await axios.get('/api/accounts');
+		accounts = data.accounts.sort()
+	}
+
 	onMount(() => {
 		option.subscribe(refresh);
+		fetchAccounts();
 	});
 
 	function accountNumber(n: number) {
@@ -112,9 +118,10 @@
 				<Option value={'out'}>出金</Option>
 			</Select>
 
+			<!-- FormField here is helpful to keep checkbox and label text on the same line -->
 			<FormField>
 				<Checkbox bind:checked={isAdmin} />
-				<span slot="label">是否有操作权限</span>
+				<span slot="label">交易权限</span>
 			</FormField>
 
 			<div style="display: flex; flex-direction: row">
