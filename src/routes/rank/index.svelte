@@ -13,6 +13,7 @@
 		const { payload, signal } = JSON.parse(e.data);
 		if (signal === 'sync_done') {
 			bonds = temp;
+			bonds.sort((a, b) => a.bondCode.localeCompare(b.bondCode));
 			syncing = false;
 			return;
 		}
