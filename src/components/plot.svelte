@@ -48,6 +48,8 @@
 				return params[0].data[0] + '<br>' + rows.join('<br>');
 			};
 
+			data.yAxis[0].splitLine.show = true
+
 			if (key === 'z') {
 				const selected = data.legend[0].selected;
 				Object.keys(selected).forEach((k) => (selected[k] = false));

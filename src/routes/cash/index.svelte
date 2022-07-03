@@ -51,7 +51,7 @@
 
 	async function fetchAccounts() {
 		const { data } = await axios.get('/api/accounts');
-		accounts = data.accounts.sort()
+		accounts = data.accounts.sort();
 	}
 
 	onMount(() => {
@@ -155,20 +155,20 @@
 					>{accountNumber(rows.reduce((a, n) => a + n.fundFlow, 0))}</span
 				>
 				<Icon class="material-icons">add</Icon>
-				<span style="margin-right: 15px"
+				<span style="margin-right: 15px;color: #55cc55"
 					>{accountNumber(
 						rows.filter((n) => n.fundFlow > 0).reduce((a, n) => a + n.fundFlow, 0)
 					)}</span
 				>
 				<Icon class="material-icons">remove</Icon>
-				<span
+				<span style=";color: pink"
 					>{accountNumber(
 						rows.filter((n) => n.fundFlow < 0).reduce((a, n) => a + n.fundFlow, 0)
 					)}</span
 				>
 			</div>
 		</div>
-		<div class="table-container" use:slimscroll={{ height: '600px', alwaysVisible: true }}>
+		<div class="table-container" use:slimscroll={{ height: '800px', alwaysVisible: true }}>
 			<DataTable sortable stickyHeader style="width: 100%">
 				<Head>
 					<Row>
@@ -181,7 +181,7 @@
 				<Body>
 					{#each rows as row (row.id)}
 						{#if (side === 'in' && row.fundFlow > 0) || (side === 'out' && row.fundFlow < 0) || side === ''}
-							<Row>
+							<Row style= {"background-color: " + (row.fundFlow > 0? "pink" : "#55cc55")}>
 								<Cell>{moment(row.t).format('YYYY-MM-DD')}</Cell>
 								<Cell>{row.strategy}</Cell>
 								<Cell>{row.fundAccount}</Cell>
