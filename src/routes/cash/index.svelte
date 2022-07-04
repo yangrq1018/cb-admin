@@ -6,7 +6,7 @@
 	import LinearProgress from '@smui/linear-progress';
 	import moment from 'moment';
 	import Select, { Option } from '@smui/select';
-	import { derived, writable } from 'svelte/store';
+	import { derived, writable} from 'svelte/store';
 	import Textfield from '@smui/textfield';
 	import Button from '@smui/button';
 	import { SvelteToast, toast } from '@zerodevx/svelte-toast';
@@ -32,7 +32,7 @@
 	let plotKey = 'z';
 	let isAdmin = false;
 
-	function refresh(o: any) {
+	async function refresh(o: any) {
 		const base = '/api/cash';
 		const params = new URLSearchParams();
 		if (o.strategy) {
@@ -43,10 +43,8 @@
 		}
 		// somehow ugly, but works
 		const u = base + '?' + params.toString();
-		axios.get(u).then((res) => {
-			const cashflows = res.data as Cashflow[];
-			rows = cashflows;
-		});
+		const {data} = await axios.get(u);
+		rows = data as Cashflow[];
 	}
 
 	async function fetchAccounts() {
@@ -148,24 +146,23 @@
 
 	<div class="table">
 		<div class="toolbar">
-			<IconButton on:click={() => refresh($option)} class="material-icons">refresh</IconButton>
+			<IconButton
+				on:click={() => refresh($option).then(() => {toast.push('刷新完成')})}
+				class="material-icons">refresh</IconButton
+			>
 			<div style="display: flex; flex: 1; align-items: center">
 				<Icon class="material-icons">attach_money</Icon>
-				<span style="margin-right: 15px"
-					>{accountNumber(rows.reduce((a, n) => a + n.fundFlow, 0))}</span
-				>
+				<span style="margin-right: 15px">
+					{accountNumber(rows.reduce((a, n) => a + n.fundFlow, 0))}
+				</span>
 				<Icon class="material-icons">add</Icon>
-				<span style="margin-right: 15px;color: #55cc55"
-					>{accountNumber(
-						rows.filter((n) => n.fundFlow > 0).reduce((a, n) => a + n.fundFlow, 0)
-					)}</span
-				>
+				<span style="margin-right: 15px;color: #55cc55">
+					{accountNumber(rows.filter((n) => n.fundFlow > 0).reduce((a, n) => a + n.fundFlow, 0))}
+				</span>
 				<Icon class="material-icons">remove</Icon>
-				<span style=";color: pink"
-					>{accountNumber(
-						rows.filter((n) => n.fundFlow < 0).reduce((a, n) => a + n.fundFlow, 0)
-					)}</span
-				>
+				<span style=";color: pink">
+					{accountNumber(rows.filter((n) => n.fundFlow < 0).reduce((a, n) => a + n.fundFlow, 0))}
+				</span>
 			</div>
 		</div>
 		<div class="table-container" use:slimscroll={{ height: '800px', alwaysVisible: true }}>
@@ -181,7 +178,7 @@
 				<Body>
 					{#each rows as row (row.id)}
 						{#if (side === 'in' && row.fundFlow > 0) || (side === 'out' && row.fundFlow < 0) || side === ''}
-							<Row style= {"background-color: " + (row.fundFlow > 0? "pink" : "#55cc55")}>
+							<Row style={'background-color: ' + (row.fundFlow > 0 ? 'pink' : '#55cc55')}>
 								<Cell>{moment(row.t).format('YYYY-MM-DD')}</Cell>
 								<Cell>{row.strategy}</Cell>
 								<Cell>{row.fundAccount}</Cell>

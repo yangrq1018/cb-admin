@@ -39,7 +39,6 @@
 	bind:sort
 	bind:sortDirection
 	on:SMUIDataTable:sorted={handleSort}
-	style="max-width: 100%;"
 >
 	<Head>
 		<Row>

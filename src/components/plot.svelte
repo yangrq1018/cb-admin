@@ -16,6 +16,9 @@
 			return;
 		}
 		const mychart = init(canvas);
+		window.onresize = function () {
+			mychart.resize();
+		};
 		try {
 			const { data } = await axios.get('/api/chart/' + key);
 			// dumb cast here
@@ -43,12 +46,17 @@
 			// "float: right" to align the values uniformly to the right border of box
 			data.tooltip.formatter = (params: any) => {
 				let rows = params.map((x: any) => {
-					return x.marker + `<span>${x.seriesName} &nbsp <span style="float: right">${asPercentage(x.data[1])}</span></span>`;
+					return (
+						x.marker +
+						`<span>${x.seriesName} &nbsp <span style="float: right">${asPercentage(
+							x.data[1]
+						)}</span></span>`
+					);
 				});
 				return params[0].data[0] + '<br>' + rows.join('<br>');
 			};
 
-			data.yAxis[0].splitLine.show = true
+			data.yAxis[0].splitLine.show = true;
 
 			if (key === 'z') {
 				const selected = data.legend[0].selected;
