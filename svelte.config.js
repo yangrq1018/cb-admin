@@ -6,10 +6,12 @@ const config = {
 	// Consult https://github.com/sveltejs/svelte-preprocess
 	// for more information about preprocessors
 	preprocess: preprocess(),
-
 	kit: {
-		adapter: adapter()
-	}
+		adapter: adapter(),
+		vite: {
+			optimizeDeps: { exclude: ["svelte-navigator"] },
+		}
+	},
 };
 
 export default config;

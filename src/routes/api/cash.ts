@@ -25,8 +25,6 @@ async function createConn() {
 export async function get(e: RequestEvent) {
     const { url } = e;
     const conn = await createConn();
-    // node.js native promisify
-
     let sql = `SELECT id, strategy,
     fund_account as fundAccount,
     fund_flow as fundFlow, 

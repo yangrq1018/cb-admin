@@ -2,7 +2,7 @@
 	"name": "cb-admin",
 	"version": "0.0.1",
 	"scripts": {
-		"dev": "svelte-kit dev",
+		"dev": "svelte-kit dev --host",
 		"build": "svelte-kit build",
 		"package": "svelte-kit package",
 		"preview": "svelte-kit preview",
@@ -49,6 +49,7 @@
 		"moment": "^2.29.3",
 		"mysql2": "^2.3.3",
 		"redis": "^4.1.0",
+		"svelte-navigator": "^3.1.6",
 		"svelte-slimscroll": "^1.0.6"
 	}
 }
